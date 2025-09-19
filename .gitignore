@@ -1,0 +1,15 @@
+Python
+venv/
+pycache/
+*.pyc
+
+Logs and Outputs
+logs/
+*.log
+*.json
+
+Compiled Binaries
+bin/
+
+macOS specific
+.DS_Store
