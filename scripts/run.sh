@@ -1,10 +1,6 @@
-#!/usr/bin/env bash
 
-# This script automates the build, installation, and demo of the lnu-suite.
-# It ensures dependencies are met and then runs a showcase of the tools.
 set -euo pipefail
 
-# Find the project root directory, regardless of where the script is run from.
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
@@ -16,15 +12,12 @@ if [ ! -d "$VENVDIR" ]; then
   python3 -m venv venv
 fi
 
-# Activate the virtual environment
 source venv/bin/activate
 echo "Installing Python dependencies from requirements.txt..."
 pip install -r requirements.txt
 
-# Build the C++ binary
 echo -e "\n--- Building C++ process utility (lnu-proc) ---"
 mkdir -p bin
-# Check if g++ is available
 if ! command -v g++ &> /dev/null
 then
     echo "g++ compiler not found. Please install it (e.g., 'sudo apt install build-essential')."
@@ -33,7 +26,6 @@ fi
 g++ -std=gnu++17 cpp/lnu_proc.cpp -o bin/lnu-proc || { echo "C++ build failed"; exit 1; }
 echo "Build successful. Binary is at bin/lnu-proc"
 
-# --- Demo Flow ---
 echo -e "\n--- Starting lnu-suite Demo ---"
 
 echo -e "\n[1] Starting monitor in the background (5s interval, 20s duration)..."
@@ -41,13 +33,11 @@ python3 lnu/monitor.py --interval 5 --duration 20 --out logs/monitor.log &
 MON_PID=$!
 echo "Monitor started with PID=$MON_PID"
 
-# Give the monitor a moment to start up
 sleep 1
 
 echo -e "\n[2] Running a quick scan on localhost ports 20-1024..."
 python3 lnu/scan.py --host 127.0.0.1 --start 20 --end 1024 --workers 200 --timeout 0.2 --output logs/scan.json
 
-# Only run lnu-proc list if we are on Linux
 if [[ "$(uname)" == "Linux" ]]; then
     echo -e "\n[3] Listing current processes with lnu-proc (top 20):"
     ./bin/lnu-proc list | head -n 20
@@ -57,7 +47,7 @@ fi
 
 
 echo -e "\n--- Waiting for monitor process ($MON_PID) to finish ---"
-# 'wait' will return non-zero if the process was already gone, '|| true' prevents script exit.
+
 wait $MON_PID || true 
 echo "Monitor has finished."
 

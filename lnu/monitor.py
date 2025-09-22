@@ -15,17 +15,14 @@ import psutil
 STOP = False
 
 def signal_handler(signum, frame):
-    """Gracefully handle termination signals."""
     global STOP
     print("\nSignal received, preparing to exit...")
     STOP = True
 
-# Register the signal handler for Ctrl+C (SIGINT) and kill (SIGTERM)
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
 def get_snapshot() -> Dict:
-    """Return a snapshot dict of cpu, memory, disk, net_io per nic and timestamp."""
     now = time.time()
     cpu = psutil.cpu_percent(interval=None)
     vm = psutil.virtual_memory()
@@ -86,8 +83,6 @@ def main():
             print(f"Error writing to log file: {e}")
             break
             
-        # Sleep for the interval, but in small chunks to allow for a responsive shutdown
-        # This makes the Ctrl+C command feel more instantaneous
         slept = 0.0
         while slept < args.interval and not STOP and time.time() < end_time:
             time.sleep(0.2)
